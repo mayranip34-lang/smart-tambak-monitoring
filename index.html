@@ -1,216 +1,151 @@
 <!DOCTYPE html>
-<html lang="id">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monitoring Kualitas Air Tambak Udang</title>
-    <!-- Tailwind CSS untuk Styling -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Chart.js untuk Grafik -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Font Awesome untuk Ikon -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
-    <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f3f4f6; }
-        .card { transition: transform 0.2s; }
-        .card:hover { transform: translateY(-5px); }
-    </style>
+<meta charset="UTF-8">
+<title>Smart Tambak Monitoring</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body class="text-gray-800">
 
-    <!-- Navbar -->
-    <nav class="bg-blue-900 text-white p-4 shadow-lg">
-        <div class="container mx-auto flex justify-between items-center">
-            <h1 class="text-xl font-bold"><i class="fa-solid fa-water mr-2"></i>Shrimp Pond Monitor</h1>
-            <span class="text-sm bg-blue-700 px-3 py-1 rounded-full">Status: <span id="connection-status" class="text-green-300">Terhubung</span></span>
-        </div>
-    </nav>
+<body class="bg-gray-100">
 
-    <div class="container mx-auto p-6">
-        
-        <!-- Bagian Sensor (Kartu Indikator) -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
-            
-            <!-- Suhu -->
-            <div class="card bg-white p-4 rounded-xl shadow-md border-l-4 border-blue-500">
-                <div class="flex justify-between items-center">
-                    <div>
-                        <p class="text-gray-500 text-sm">Suhu Air</p>
-                        <h2 class="text-2xl font-bold" id="val-suhu">--</h2>
-                        <span class="text-xs text-gray-400">°C</span>
-                    </div>
-                    <i class="fa-solid fa-temperature-high text-3xl text-blue-200"></i>
-                </div>
-                <p class="text-xs mt-2 text-gray-500">Ideal: 28 - 30°C</p>
-            </div>
+<!-- LOGIN PAGE -->
+<div id="loginPage" class="h-screen flex items-center justify-center">
+  <div class="bg-white p-8 rounded-xl shadow-lg w-80">
+    <h2 class="text-xl font-bold mb-4 text-center">Login Admin</h2>
+    <input id="username" class="w-full border p-2 mb-3 rounded" placeholder="Username">
+    <input id="password" type="password" class="w-full border p-2 mb-3 rounded" placeholder="Password">
+    <button onclick="login()" class="w-full bg-blue-600 text-white p-2 rounded">Login</button>
+    <p id="loginError" class="text-red-500 text-sm mt-2"></p>
+  </div>
+</div>
 
-            <!-- pH -->
-            <div class="card bg-white p-4 rounded-xl shadow-md border-l-4 border-green-500" id="card-ph">
-                <div class="flex justify-between items-center">
-                    <div>
-                        <p class="text-gray-500 text-sm">Tingkat Keasaman (pH)</p>
-                        <h2 class="text-2xl font-bold" id="val-ph">--</h2>
-                        <span class="text-xs text-gray-400">pH</span>
-                    </div>
-                    <i class="fa-solid fa-flask text-3xl text-green-200"></i>
-                </div>
-                <p class="text-xs mt-2 text-gray-500">Ideal: 7.5 - 8.5</p>
-            </div>
+<!-- DASHBOARD -->
+<div id="dashboard" class="hidden">
 
-            <!-- TDS -->
-            <div class="card bg-white p-4 rounded-xl shadow-md border-l-4 border-purple-500">
-                <div class="flex justify-between items-center">
-                    <div>
-                        <p class="text-gray-500 text-sm">TDS</p>
-                        <h2 class="text-2xl font-bold" id="val-tds">--</h2>
-                        <span class="text-xs text-gray-400">ppm</span>
-                    </div>
-                    <i class="fa-solid fa-droplet text-3xl text-purple-200"></i>
-                </div>
-                <p class="text-xs mt-2 text-gray-500">Ideal: < 1000 ppm</p>
-            </div>
+<nav class="bg-blue-900 text-white p-4 flex justify-between">
+  <h1 class="font-bold">Smart Tambak Monitoring</h1>
+  <button onclick="logout()" class="bg-red-500 px-3 py-1 rounded">Logout</button>
+</nav>
 
-            <!-- Turbidity -->
-            <div class="card bg-white p-4 rounded-xl shadow-md border-l-4 border-yellow-500">
-                <div class="flex justify-between items-center">
-                    <div>
-                        <p class="text-gray-500 text-sm">Kekeruhan</p>
-                        <h2 class="text-2xl font-bold" id="val-turbid">--</h2>
-                        <span class="text-xs text-gray-400">NTU</span>
-                    </div>
-                    <i class="fa-solid fa-eye-slash text-3xl text-yellow-200"></i>
-                </div>
-                <p class="text-xs mt-2 text-gray-500">Ideal: < 50 NTU</p>
-            </div>
+<div class="p-6 grid grid-cols-2 md:grid-cols-5 gap-4">
 
-            <!-- DO (Dissolved Oxygen) -->
-            <div class="card bg-white p-4 rounded-xl shadow-md border-l-4 border-red-500" id="card-do">
-                <div class="flex justify-between items-center">
-                    <div>
-                        <p class="text-gray-500 text-sm">Oksigen Terlarut</p>
-                        <h2 class="text-2xl font-bold" id="val-do">--</h2>
-                        <span class="text-xs text-gray-400">mg/L</span>
-                    </div>
-                    <i class="fa-solid fa-wind text-3xl text-red-200"></i>
-                </div>
-                <p class="text-xs mt-2 text-gray-500">Ideal: > 4 mg/L</p>
-            </div>
+<div class="bg-white p-4 rounded shadow">
+<p>Suhu</p><h2 id="val-suhu" class="text-xl font-bold">--</h2>
+</div>
 
-        </div>
+<div class="bg-white p-4 rounded shadow">
+<p>pH</p><h2 id="val-ph">--</h2>
+</div>
 
-        <!-- Bagian Grafik dan Detail -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            
-            <!-- Grafik Realtime -->
-            <div class="lg:col-span-2 bg-white p-4 rounded-xl shadow-md">
-                <h3 class="font-bold text-lg mb-4 text-gray-700">Tren Kualitas Air (24 Jam Terakhir)</h3>
-                <canvas id="waterChart" height="150"></canvas>
-            </div>
+<div class="bg-white p-4 rounded shadow">
+<p>DO</p><h2 id="val-do">--</h2>
+</div>
 
-            <!-- Alert System -->
-            <div class="bg-white p-4 rounded-xl shadow-md">
-                <h3 class="font-bold text-lg mb-4 text-gray-700">Notifikasi Sistem</h3>
-                <div id="log-activity" class="h-64 overflow-y-auto space-y-3 text-sm">
-                    <!-- Log akan muncul di sini -->
-                    <div class="p-2 bg-blue-50 text-blue-700 rounded">Sistem dinyalakan...</div>
-                </div>
-            </div>
-        </div>
-    </div>
+<div class="bg-white p-4 rounded shadow">
+<p>RSSI</p><h2 id="val-rssi">--</h2>
+</div>
 
-    <script>
-        // KONFIGURASI AWAL
-        const ctx = document.getElementById('waterChart').getContext('2d');
-        
-        // Membuat Grafik Kosong
-        const waterChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: [],
-                datasets: [
-                    { label: 'Suhu (°C)', borderColor: '#3b82f6', data: [], tension: 0.4 },
-                    { label: 'pH', borderColor: '#22c55e', data: [], tension: 0.4 },
-                    { label: 'DO (mg/L)', borderColor: '#ef4444', data: [], tension: 0.4 }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: { y: { beginAtZero: false } }
-            }
-        });
+<div class="bg-white p-4 rounded shadow">
+<p>Delay</p><h2 id="val-delay">--</h2>
+</div>
 
-        // LOGIKA SIMULASI DATA (Menggunakan Random Number)
-        // Pada aplikasi nyata, ini akan diganti dengan fungsi fetch() dari API
-        
-        function getRandom(min, max) {
-            return (Math.random() * (max - min) + min).toFixed(1);
-        }
+</div>
 
-        function updateDashboard() {
-            // 1. Hasilkan Data Acak (Simulasi Sensor)
-            const dataSuhu = getRandom(26, 32);
-            const dataPh = getRandom(6.5, 9.0);
-            const dataTds = Math.floor(getRandom(500, 1200));
-            const dataTurbid = Math.floor(getRandom(10, 80));
-            const dataDo = getRandom(2, 7);
+<div class="p-6">
+<canvas id="chart"></canvas>
+</div>
 
-            // 2. Tampilkan di HTML
-            document.getElementById('val-suhu').innerText = dataSuhu;
-            document.getElementById('val-ph').innerText = dataPh;
-            document.getElementById('val-tds').innerText = dataTds;
-            document.getElementById('val-turbid').innerText = dataTurbid;
-            document.getElementById('val-do').innerText = dataDo;
+</div>
 
-            // 3. Cek Logika (Warna & Alert)
-            const time = new Date().toLocaleTimeString();
-            
-            // Update Grafik
-            if(waterChart.data.labels.length > 10) {
-                waterChart.data.labels.shift();
-                waterChart.data.datasets[0].data.shift();
-                waterChart.data.datasets[1].data.shift();
-                waterChart.data.datasets[2].data.shift();
-            }
-            waterChart.data.labels.push(time);
-            waterChart.data.datasets[0].data.push(dataSuhu);
-            waterChart.data.datasets[1].data.push(dataPh);
-            waterChart.data.datasets[2].data.push(dataDo);
-            waterChart.update();
+<script>
+/* =========================
+   LOGIN SYSTEM
+========================= */
 
-            // Cek Bahaya (Logika Sederhana)
-            const logContainer = document.getElementById('log-activity');
-            
-            // Alert pH
-            if(dataPh < 7.0 || dataPh > 9.0) {
-                addLog(`Peringatan: pH air tidak normal (${dataPh})`, 'text-red-600', 'bg-red-50');
-                document.getElementById('card-ph').classList.replace('border-green-500', 'border-red-500');
-            } else {
-                document.getElementById('card-ph').classList.replace('border-red-500', 'border-green-500');
-            }
+const ADMIN_USER = "admin";
+const ADMIN_PASS = "12345";
 
-            // Alert DO
-            if(dataDo < 3.0) {
-                addLog(`BAHAYA: Oksigen sangat rendah! (${dataDo} mg/L)`, 'text-red-600', 'bg-red-50');
-            }
-        }
+function login(){
+  let user = document.getElementById("username").value;
+  let pass = document.getElementById("password").value;
 
-        function addLog(msg, textColor, bgColor) {
-            const div = document.createElement('div');
-            const time = new Date().toLocaleTimeString();
-            div.className = `p-2 rounded ${bgColor} ${textColor}`;
-            div.innerText = `[${time}] ${msg}`;
-            
-            const container = document.getElementById('log-activity');
-            container.prepend(div);
-        }
+  if(user === ADMIN_USER && pass === ADMIN_PASS){
+    document.getElementById("loginPage").classList.add("hidden");
+    document.getElementById("dashboard").classList.remove("hidden");
+  } else {
+    document.getElementById("loginError").innerText = "Username atau Password salah!";
+  }
+}
 
-        // Update setiap 3 detik
-        setInterval(updateDashboard, 3000);
-        updateDashboard(); // Jalankan pertama kali
+function logout(){
+  location.reload();
+}
 
-    </script>
+/* =========================
+   CHART
+========================= */
+
+const ctx = document.getElementById('chart').getContext('2d');
+const waterChart = new Chart(ctx, {
+  type: 'line',
+  data: {
+    labels: [],
+    datasets: [{
+      label: 'Suhu',
+      data: [],
+      borderColor: 'blue'
+    }]
+  }
+});
+
+/* =========================
+   WEBSOCKET NODE-RED
+========================= */
+
+const socket = new WebSocket("ws://localhost:1880/ws/data");
+
+socket.onmessage = function(event){
+  const data = JSON.parse(event.data);
+
+  document.getElementById('val-suhu').innerText = data.suhu;
+  document.getElementById('val-ph').innerText = data.ph;
+  document.getElementById('val-do').innerText = data.do;
+  document.getElementById('val-rssi').innerText = data.rssi;
+  document.getElementById('val-delay').innerText = data.delay + " ms";
+
+  updateChart(data.suhu);
+  sendToGoogleSheets(data);
+};
+
+/* =========================
+   UPDATE CHART
+========================= */
+
+function updateChart(value){
+  let time = new Date().toLocaleTimeString();
+  if(waterChart.data.labels.length > 15){
+    waterChart.data.labels.shift();
+    waterChart.data.datasets[0].data.shift();
+  }
+  waterChart.data.labels.push(time);
+  waterChart.data.datasets[0].data.push(value);
+  waterChart.update();
+}
+
+/* =========================
+   EXPORT GOOGLE SHEETS
+========================= */
+
+const SHEETS_URL = "PASTE_URL_WEB_APP_KAMU_DISINI";
+
+function sendToGoogleSheets(data){
+  fetch(SHEETS_URL, {
+    method: "POST",
+    body: JSON.stringify(data)
+  });
+}
+
+</script>
 </body>
-
 </html>
